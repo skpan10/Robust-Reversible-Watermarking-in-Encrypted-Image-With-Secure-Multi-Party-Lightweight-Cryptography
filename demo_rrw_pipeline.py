@@ -1,10 +1,10 @@
 # demo_rrw_pipeline.py
 # Minimal end-to-end demo: AES-GCM (aead) + PEE-based reversible watermarking.
 # Usage:
-#   python demo_rrw_pipeline.py --cover data/cover_sample.png --password "my pass" \
+#   python demo_rrw_pipeline.py --cover data/cover.png --password "my pass" \
 #       --message "Top secret" --out watermarked.png --recover cover_recovered.png
 
-import argparse, json, base64, os
+import argparse, json, base64
 import numpy as np
 import cv2
 
@@ -49,7 +49,6 @@ def main():
 
     # 1) Load cover
     cover = load_image_rgb(args.cover)
-    H, W, C = cover.shape
     print(f"[+] Loaded cover: {args.cover}  shape={cover.shape}")
 
     # 2) Encrypt plaintext with AES-GCM
@@ -68,13 +67,14 @@ def main():
     wm_rgb, side_info, used = pee_embed(cover, bits)
     save_image_rgb(args.out, wm_rgb)
 
-    # Save side-info (compressed location map + dims) so we can extract later
+    # Save side-info (ordered coords + dims) so we can extract later
     meta_path = args.meta or (args.out + ".meta.json")
     meta = {
         "side_info": {
             "H": side_info["H"],
             "W": side_info["W"],
-            "cmpr_map": b64(side_info["cmpr_map"]),
+            "coords": b64(side_info["coords"]),  # <-- updated
+            "used":   used                       # <-- store used explicitly (redundant but handy)
         },
         "used_bits": used,
         "cover_shape": list(cover.shape),
@@ -83,14 +83,16 @@ def main():
         json.dump(meta, f)
     print(f"[+] Embedded {used} bits → wrote {args.out} and {meta_path}")
 
-    # 4) Extract back from the watermarked image
+    # 4) Extract back from the watermarked image using saved side-info
     wm_rgb2 = load_image_rgb(args.out)
     with open(meta_path, "r") as f:
         meta2 = json.load(f)
+
     side_info2 = {
         "H": meta2["side_info"]["H"],
         "W": meta2["side_info"]["W"],
-        "cmpr_map": ub64(meta2["side_info"]["cmpr_map"]),
+        "coords": ub64(meta2["side_info"]["coords"]),  # <-- updated
+        "used":   meta2["side_info"].get("used", meta2["used_bits"])
     }
     used2 = meta2["used_bits"]
 
@@ -117,3 +119,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
