@@ -1,12 +1,17 @@
-# src/main.py
+# main.py — Final Updated Version (RRW + SMC + AES-GCM + SHA256)
 import argparse, json, base64, os, hashlib
 import numpy as np
 import cv2
 from PIL import Image
+
 from crypto import aead_encrypt, aead_decrypt, derive_key
 from smc import split_key_xor, combine_key_xor
 from watermark_rrw import pee_embed, pee_extract, bytes_to_bits, bits_to_bytes
 from metrics import psnr, ber
+
+# ======================================================
+# === Helpers ==========================================
+# ======================================================
 
 def load_image(path):
     img = cv2.imread(path, cv2.IMREAD_COLOR)
@@ -19,12 +24,19 @@ def save_image(path, rgb):
     bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
     cv2.imwrite(path, bgr)
 
-def b64(x: bytes) -> str: return base64.b64encode(x).decode('utf-8')
-def ub64(s: str) -> bytes: return base64.b64decode(s.encode('utf-8'))
+def b64(x: bytes) -> str:
+    return base64.b64encode(x).decode('utf-8')
+
+def ub64(s: str) -> bytes:
+    return base64.b64decode(s.encode('utf-8'))
 
 def sha256_digest(arr: np.ndarray) -> str:
     """Return SHA-256 hash of raw image bytes (for reversibility verification)."""
     return hashlib.sha256(arr.tobytes()).hexdigest()
+
+# ======================================================
+# === EMBED MODE =======================================
+# ======================================================
 
 def cmd_embed(args):
     cover = load_image(args.cover)
@@ -39,7 +51,10 @@ def cmd_embed(args):
     # --- Encrypt message ---
     salt2, nonce, ct, tag = aead_encrypt(args.message.encode('utf-8'), passphrase)
     ct_blob = json.dumps({
-        "salt": b64(salt2), "nonce": b64(nonce), "tag": b64(tag), "ct": b64(ct)
+        "salt": b64(salt2),
+        "nonce": b64(nonce),
+        "tag": b64(tag),
+        "ct": b64(ct)
     }).encode('utf-8')
 
     # --- Embed into image ---
@@ -47,17 +62,19 @@ def cmd_embed(args):
     wm_rgb, side_info, used = pee_embed(cover, bits)
     save_image(args.out, wm_rgb)
 
-    # --- Save metadata ---
+    # --- Save metadata (updated: coords instead of cmpr_map) ---
     meta = {
         "side_info": {
             "H": side_info["H"],
             "W": side_info["W"],
-            "cmpr_map": b64(side_info["cmpr_map"])
+            "coords": b64(side_info["coords"]),
+            "used": side_info.get("used", used)
         },
         "used_bits": used,
         "cover_shape": list(cover.shape),
         "cover_sha256": cover_hash
     }
+
     with open(args.out + ".meta.json", "w") as f:
         json.dump(meta, f)
 
@@ -65,15 +82,21 @@ def cmd_embed(args):
     print(f"[embed] wrote: {args.out} & {args.out}.meta.json")
     print(f"[embed] cover hash: {cover_hash}")
 
+# ======================================================
+# === EXTRACT MODE =====================================
+# ======================================================
+
 def cmd_extract(args):
     wm_rgb = load_image(args.marked)
     with open(args.meta, "r") as f:
         meta = json.load(f)
 
+    # Updated: load coords + used
     side_info = {
         "H": meta["side_info"]["H"],
         "W": meta["side_info"]["W"],
-        "cmpr_map": ub64(meta["side_info"]["cmpr_map"])
+        "coords": ub64(meta["side_info"]["coords"]),
+        "used": meta["side_info"].get("used", meta["used_bits"])
     }
     used = meta["used_bits"]
 
@@ -110,6 +133,10 @@ def cmd_extract(args):
 
     print(f"[extract] wrote recovered cover: {out_cover}")
 
+# ======================================================
+# === ENTRY POINT ======================================
+# ======================================================
+
 def main():
     ap = argparse.ArgumentParser(description="RRW + SMC (with AES-GCM & SHA256 verification)")
     sub = ap.add_subparsers(dest="cmd")
@@ -136,3 +163,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
