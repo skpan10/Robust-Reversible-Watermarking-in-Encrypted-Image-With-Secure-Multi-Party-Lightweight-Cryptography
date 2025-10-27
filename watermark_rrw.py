@@ -1,114 +1,124 @@
-# src/rrw.py
 import numpy as np
 import zlib
 from PIL import Image
 
-# --- Helpers ---
+# ======================================================
+# === Helpers ==========================================
+# ======================================================
+
 def to_gray(img: np.ndarray) -> np.ndarray:
-    # img: HxWx3 uint8 -> return HxW uint8
+    """Convert RGB → grayscale uint8"""
     if img.ndim == 3:
         return (0.299*img[...,0] + 0.587*img[...,1] + 0.114*img[...,2]).astype(np.uint8)
     return img
 
-def clip255(x): return np.uint8(np.clip(x, 0, 255))
+def clip255(x): 
+    return np.uint8(np.clip(x, 0, 255))
 
-# Simple predictor (4-neighborhood mean)
+# 4-neighbourhood mean predictor
 def predict(I):
-    # pad edges with same values to avoid boundary issues
     Ip = np.pad(I, 1, mode='edge')
-    # prediction: average of N,S,E,W
     pred = ((Ip[1:-1,2:] + Ip[1:-1,:-2] + Ip[2:,1:-1] + Ip[:-2,1:-1]) / 4.0).round()
     return pred.astype(np.int16)
 
-# Convert bitstring <-> bytes
+# Bit conversions
 def bits_to_bytes(bits: np.ndarray) -> bytes:
     pad = (8 - (len(bits) % 8)) % 8
-    if pad: bits = np.concatenate([bits, np.zeros(pad, dtype=np.uint8)])
-    by = np.packbits(bits)
-    return bytes(by)
+    if pad:
+        bits = np.concatenate([bits, np.zeros(pad, dtype=np.uint8)])
+    return np.packbits(bits).tobytes()
 
 def bytes_to_bits(b: bytes) -> np.ndarray:
     return np.unpackbits(np.frombuffer(b, dtype=np.uint8))
 
-# --- Core PEE embedding ---
+# ======================================================
+# === Core RRW Embed ===================================
+# ======================================================
+
 def pee_embed(cover_rgb: np.ndarray, payload_bits: np.ndarray):
     """
-    cover_rgb: HxWx3 uint8
-    payload_bits: 1D array of {0,1}
-    Returns: watermarked_rgb, side_info (compressed loc map, params), used_bits
+    Robust reversible watermark embedding.
+    cover_rgb : HxWx3 uint8
+    payload_bits : 1D array of {0,1}
+    returns: (watermarked_rgb, side_info_dict, used_bits)
     """
     I = to_gray(cover_rgb)
     H, W = I.shape
     pred = predict(I)
-    err = I.astype(np.int16) - pred  # prediction error
+    err  = I.astype(np.int16) - pred
 
-    # Choose expandable bins (e.g., error==0) for simplest demo
-    # In real RRW you'd use a range (0 and -1) to balance distortion/capacity.
-    loc = (err == 0)  # locations we can expand
-    idx = np.argwhere(loc).reshape(-1)
-
-    used = min(len(idx), len(payload_bits))
+    # Select expandable bins (simple version: err == 0)
+    loc = (err == 0)
+    coords_all = list(zip(*np.where(loc)))          # deterministic row-major order
+    used = min(len(coords_all), len(payload_bits))
     if used == 0:
         raise ValueError("No capacity to embed any bits with chosen bins.")
 
-    # We'll expand error 0 -> 0 or 1 to carry one bit per expandable pixel.
+    coords_used = coords_all[:used]
     Iw = I.copy().astype(np.int16)
-    k = 0
-    for (r, c) in zip(*np.where(loc)):
-        if k >= used: break
+
+    for k, (r, c) in enumerate(coords_used):
         bit = int(payload_bits[k])
-        # expansion: err=0, new pixel = pred + (0 + bit)
         Iw[r, c] = pred[r, c] + bit
-        k += 1
 
     Iw = clip255(Iw)
 
-    # Location map needs to be reproducible on extraction.
-    # Here we store the positions we used and H,W as side info (compressed).
-    used_map = np.zeros((H, W), dtype=np.uint8)
-    used_map[loc] = 1
-    used_map_bytes = used_map.tobytes()
-    cmpr_map = zlib.compress(used_map_bytes, level=9)
+    # Store only the used coordinates (ordered)
+    coords_arr = np.array(coords_used, dtype=np.uint16)
+    cmpr_coords = zlib.compress(coords_arr.tobytes(), level=9)
+    side_info = {"H": H, "W": W, "coords": cmpr_coords, "used": used}
 
-    # Return a color image (merge gray channel back simply by replacing luminance)
+    # Merge into RGB for output
     wm_rgb = cover_rgb.copy()
-    # Put Iw into all channels equally (minimal demo). For production, use Y channel in YCbCr.
-    wm_rgb[...,0] = Iw
-    wm_rgb[...,1] = Iw
-    wm_rgb[...,2] = Iw
+    wm_rgb[..., 0] = Iw
+    wm_rgb[..., 1] = Iw
+    wm_rgb[..., 2] = Iw
 
-    side_info = {
-        "H": H, "W": W,
-        "cmpr_map": cmpr_map
-    }
     return wm_rgb, side_info, used
+
+# ======================================================
+# === Core RRW Extract =================================
+# ======================================================
 
 def pee_extract(marked_rgb: np.ndarray, side_info: dict):
     """
-    Returns: recovered_bits (np.ndarray), recovered_cover_rgb (uint8)
+    Extract bits using the exact coordinate order saved at embed-time
+    and progressively restore pixels so the local predictor sees the
+    same context the embedder used.
     """
     Iw = to_gray(marked_rgb).astype(np.int16)
-    H, W = side_info["H"], side_info["W"]
-    used_map = np.frombuffer(zlib.decompress(side_info["cmpr_map"]), dtype=np.uint8).reshape(H, W).astype(bool)
+    H, W = int(side_info["H"]), int(side_info["W"])
 
-    pred = predict(Iw.astype(np.uint8))
-    # For places we used, err' = Iw - pred should be {0 or 1}; bit = err'
-    errp = Iw - pred
-    bits = np.zeros(int(used_map.sum()), dtype=np.uint8)
+    # Decompress ordered coordinate list
+    coords_arr = np.frombuffer(
+        zlib.decompress(side_info["coords"]), dtype=np.uint16
+    ).reshape(-1, 2)
+    used = int(side_info.get("used", len(coords_arr)))
+    coords_used = [(int(r), int(c)) for r, c in coords_arr[:used]]
 
-    k = 0
+    # Progressive restoration with same predictor logic
+    def pred_local(I, r, c):
+        r_up = max(r - 1, 0)
+        r_dn = min(r + 1, I.shape[0] - 1)
+        c_lt = max(c - 1, 0)
+        c_rt = min(c + 1, I.shape[1] - 1)
+        return int(round((I[r_up, c] + I[r_dn, c] + I[r, c_rt] + I[r, c_lt]) / 4.0))
+
     Irec = Iw.copy()
-    coords = np.argwhere(used_map)
-    for r, c in coords:
-        b = int(np.clip(errp[r, c], 0, 1))
-        bits[k] = b
-        # Reversible step: restore original pixel: pred + 0 (since original err was 0)
-        Irec[r, c] = pred[r, c]
-        k += 1
+    bits = np.zeros(used, dtype=np.uint8)
+
+    for k, (r, c) in enumerate(coords_used):
+        p = pred_local(Irec, r, c)
+        errp = int(Irec[r, c] - p)
+        bits[k] = 1 if errp >= 1 else 0
+        Irec[r, c] = p  # progressively restore
 
     Irec = clip255(Irec)
     rec_rgb = marked_rgb.copy()
-    rec_rgb[...,0] = Irec
-    rec_rgb[...,1] = Irec
-    rec_rgb[...,2] = Irec
+    rec_rgb[..., 0] = Irec
+    rec_rgb[..., 1] = Irec
+    rec_rgb[..., 2] = Irec
+
     return bits, rec_rgb
+
+
