@@ -125,16 +125,17 @@ Robust-Reversible-Watermarking/
 ├── main.py                # CLI wrapper + SHA-256 verification
 └── legacy_AES_LSB_version.py (archived for reference)
 
-📊 Example Output Images
+## 📊 Example Output Images
 
 <p align="center">
-  <img src="examples/watermarked.png" width="45%" alt="Watermarked Image"/>
-  <img src="examples/recovered.png" width="45%" alt="Recovered Image"/>
+  <img src="./examples/watermarked.png" alt="Watermarked Image" width="45%"/>
+  <img src="./examples/recovered.png" alt="Recovered Image" width="45%"/>
 </p>
 
 <p align="center">
   <em>Figure: Comparison between Watermarked and Recovered images showing perfect reversibility (BER = 0)</em>
 </p>
+
 
 
 📈 Research Significance
