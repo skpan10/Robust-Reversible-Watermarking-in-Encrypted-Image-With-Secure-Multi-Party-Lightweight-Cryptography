@@ -125,17 +125,11 @@ Robust-Reversible-Watermarking/
 └── legacy_AES_LSB_version.py
 
 ## 📊 Example Output Images
-
-| Watermarked Image | Recovered Image |
-|--------------------|----------------|
-| ![Watermarked](examples/watermarked.png) | ![Recovered](examples/recovered.png) |
-
-<p align="center">
-  <em>Figure: Comparison between Watermarked and Recovered images showing perfect reversibility (BER = 0)</em>
-</p>
-
-
-
+<div align="center">
+  <img src="examples/watermarked.png" width="45%" />
+  <img src="examples/recovered.png" width="45%" />
+  <p><em>Figure: Watermarked vs Recovered image — perfect reversibility (BER = 0)</em></p>
+</div>
 
 📈 Research Significance
 
