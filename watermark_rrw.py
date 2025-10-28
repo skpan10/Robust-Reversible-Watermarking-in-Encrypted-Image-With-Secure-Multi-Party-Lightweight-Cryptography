@@ -18,28 +18,34 @@ def pee_embed(cover_rgb: np.ndarray, payload_bits: np.ndarray):
     I = _to_gray(cover_rgb)
     H, W = I.shape
 
-    pred = _predict_causal(I)              # predictor on the original cover
+    pred = _predict_causal(I)                  # causal predictor on original cover
     err  = I.astype(np.int16) - pred
 
     # Expand only where err==0 AND pred<=254 (avoid +1 overflow)
     loc = (err == 0) & (pred <= 254)
-    coords = np.argwhere(loc).astype(np.uint16)  # row-major (N,2)
+    coords = np.argwhere(loc).astype(np.uint16)   # (N,2), row-major
 
     used = min(len(coords), len(payload_bits))
     if used == 0:
         raise ValueError("No capacity to embed any bits with chosen bins (safe).")
 
+    coords_used = coords[:used]
     Iw = I.copy().astype(np.int16)
+
+    # Embed using the *same* predictions
     for k in range(used):
-        r, c = map(int, coords[k])
-        bit = int(payload_bits[k])         # 0 or 1
+        r, c = map(int, coords_used[k])
+        bit = int(payload_bits[k])
         Iw[r, c] = pred[r, c] + bit
 
     Iw = _clip255(Iw)
 
-    # store coords in C-order
-    cmpr_coords = zlib.compress(coords[:used].tobytes(order="C"), level=9)
-    side_info = {"H": H, "W": W, "coords": cmpr_coords, "used": used}
+    # Store coords and the predictor values at those coords (uint8), both compressed
+    cmpr_coords = zlib.compress(coords_used.tobytes(order="C"), level=9)
+    pred_vals   = pred[coords_used[:,0], coords_used[:,1]].astype(np.uint8)
+    cmpr_pred   = zlib.compress(pred_vals.tobytes(), level=9)
+
+    side_info = {"H": H, "W": W, "coords": cmpr_coords, "pred_vals": cmpr_pred, "used": used}
 
     wm_rgb = cover_rgb.copy()
     wm_rgb[...,0] = Iw; wm_rgb[...,1] = Iw; wm_rgb[...,2] = Iw
@@ -51,19 +57,20 @@ def pee_extract(marked_rgb: np.ndarray, side_info: dict):
     coords = np.frombuffer(zlib.decompress(side_info["coords"]),
                            dtype=np.uint16).reshape(-1, 2, order="C")
     used = int(side_info.get("used", len(coords)))
+    coords = coords[:used]
+
+    pred_vals = np.frombuffer(zlib.decompress(side_info["pred_vals"]), dtype=np.uint8)[:used]
 
     Irec = Iw.copy()
     bits = np.zeros(used, dtype=np.uint8)
 
-    # Raster-scan; predictor uses only north & west from Irec (already restored)
+    # Use the EXACT predictor values from embed-time (no drift)
     for k in range(used):
         r, c = map(int, coords[k])
-        r_up = 0 if r == 0 else r-1
-        c_lt = 0 if c == 0 else c-1
-        p = int(round((Irec[r_up, c] + Irec[r, c_lt]) / 2.0))
+        p = int(pred_vals[k])
         errp = int(Irec[r, c] - p)
         bits[k] = 1 if errp >= 1 else 0
-        Irec[r, c] = p
+        Irec[r, c] = p  # restore original pixel
 
     Irec = _clip255(Irec)
     rec_rgb = marked_rgb.copy()
