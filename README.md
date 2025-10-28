@@ -128,10 +128,22 @@ Robust-Reversible-Watermarking/
     ├── watermarked.png
     └── recovered.png
 
-📊 Example Output Images
-Watermarked	Recovered (Bit-Exact)
+## 📊 Example Output Images
 
-	<p align="center"><em>Figure: Watermarked vs. Recovered image. Reversibility is perfect (BER = 0).</em></p>
+| Watermarked Image | Recovered Image |
+|---|---|
+| ![Watermarked](https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/watermarked.png) | ![Recovered](https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/recovered.png) |
+
+**Direct raw links (for download / copy):**
+
+Watermarked: https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/watermarked.png
+
+Recovered : https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/recovered.png
+
+<p align="center">
+  <em>Figure: Watermarked vs Recovered (BER = 0, bit-exact reversibility).</em>
+</p>
+
 
 📈 Research Significance
 
