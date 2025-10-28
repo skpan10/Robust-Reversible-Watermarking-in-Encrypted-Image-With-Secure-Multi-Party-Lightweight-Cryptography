@@ -128,13 +128,14 @@ Robust-Reversible-Watermarking/
 ## 📊 Example Output Images
 
 <p align="center">
-  <img src="./examples/watermarked.png" alt="Watermarked Image" width="45%"/>
-  <img src="./examples/recovered.png" alt="Recovered Image" width="45%"/>
+  <img src="examples/watermarked.png" alt="Watermarked Image" width="45%"/>
+  <img src="examples/recovered.png" alt="Recovered Image" width="45%"/>
 </p>
 
 <p align="center">
   <em>Figure: Comparison between Watermarked and Recovered images showing perfect reversibility (BER = 0)</em>
 </p>
+
 
 
 
