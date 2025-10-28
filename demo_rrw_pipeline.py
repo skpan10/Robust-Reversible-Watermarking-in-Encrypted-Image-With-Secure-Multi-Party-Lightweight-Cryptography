@@ -67,14 +67,15 @@ def main():
     wm_rgb, side_info, used = pee_embed(cover, bits)
     save_image_rgb(args.out, wm_rgb)
 
-    # Save side-info (ordered coords + dims) so we can extract later
+    # Save side-info (coords + pred_vals + dims) so we can extract later
     meta_path = args.meta or (args.out + ".meta.json")
     meta = {
         "side_info": {
             "H": side_info["H"],
             "W": side_info["W"],
-            "coords": b64(side_info["coords"]),  # <-- updated
-            "used":   used                       # <-- store used explicitly (redundant but handy)
+            "coords":    b64(side_info["coords"]),     # <-- coords bytes
+            "pred_vals": b64(side_info["pred_vals"]),  # <-- predictor values bytes
+            "used":      used
         },
         "used_bits": used,
         "cover_shape": list(cover.shape),
@@ -91,8 +92,9 @@ def main():
     side_info2 = {
         "H": meta2["side_info"]["H"],
         "W": meta2["side_info"]["W"],
-        "coords": ub64(meta2["side_info"]["coords"]),  # <-- updated
-        "used":   meta2["side_info"].get("used", meta2["used_bits"])
+        "coords":    ub64(meta2["side_info"]["coords"]),
+        "pred_vals": ub64(meta2["side_info"]["pred_vals"]),
+        "used":      meta2["side_info"].get("used", meta2["used_bits"]),
     }
     used2 = meta2["used_bits"]
 
@@ -119,4 +121,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
