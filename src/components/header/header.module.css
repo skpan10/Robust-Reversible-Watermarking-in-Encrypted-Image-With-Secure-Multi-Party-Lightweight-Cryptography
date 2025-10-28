@@ -1,0 +1,13 @@
+.header {
+    display: flex;
+    background-color: red!important;
+    justify-content: space-between;
+    flex: none;
+}
+
+.header .brand h1 {
+    color: yellow;
+    font-family: Montserrat;
+    font-weight: bolder;
+}
+

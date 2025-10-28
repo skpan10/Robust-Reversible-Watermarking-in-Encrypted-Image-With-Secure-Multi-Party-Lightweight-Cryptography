@@ -1,0 +1,25 @@
+.container {
+    background: white;
+    max-width: 600px;
+    padding: 1rem 3rem;
+    border-radius: .5rem;
+    border: 2px solid rgb(5, 19, 148);
+    margin: 20px 0;
+    font-family: Montserrat;
+}
+
+@media(max-width: 768px) {
+    .container {
+        background: white;
+        margin: 20px 0;
+        padding: 1.5rem;
+
+        width: calc(100% - 10vh);
+    }
+}
+
+
+
+.container h1 {
+    margin-bottom: 2rem;
+}
