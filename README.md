@@ -5,7 +5,7 @@
 [![RRW](https://img.shields.io/badge/Algorithm-Reversible%20Watermarking-orange.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)]()
 
-> **Author:** Saransh (SKP)  
+> **Author:** Saransh Kumar Pandey
 > **Project Type:** Research / Cryptographic Image Security  
 > **Status:** ✅ Verified — BER = 0  |  PSNR ≈ 50 dB  |  Perfect SHA-256 Reversibility  
 
@@ -168,7 +168,7 @@ Released under the MIT License — free to use, modify, and distribute with attr
 
 If you reference this work in academic research, please cite:
 
-    Saransh Pandey,
+    Saransh Kumar Pandey,
     “Robust Reversible Watermarking in Encrypted Images with Secure Multi-Party Lightweight Cryptography”, 2025.
 
 🚀 Final Verification
