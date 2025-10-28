@@ -46,15 +46,15 @@ def cmd_embed(args):
     passphrase = args.password
     key, _ = derive_key(passphrase)
     k1, k2 = split_key_xor(key)
-    key_combined = combine_key_xor(k1, k2)
+    _ = combine_key_xor(k1, k2)  # kept for demo symmetry
 
     # --- Encrypt message ---
     salt2, nonce, ct, tag = aead_encrypt(args.message.encode('utf-8'), passphrase)
     ct_blob = json.dumps({
-        "salt": b64(salt2),
+        "salt":  b64(salt2),
         "nonce": b64(nonce),
-        "tag": b64(tag),
-        "ct": b64(ct)
+        "tag":   b64(tag),
+        "ct":    b64(ct)
     }).encode('utf-8')
 
     # --- Embed into image ---
@@ -62,13 +62,14 @@ def cmd_embed(args):
     wm_rgb, side_info, used = pee_embed(cover, bits)
     save_image(args.out, wm_rgb)
 
-    # --- Save metadata (updated: coords instead of cmpr_map) ---
+    # --- Save metadata (coords + pred_vals + dims) ---
     meta = {
         "side_info": {
             "H": side_info["H"],
             "W": side_info["W"],
-            "coords": b64(side_info["coords"]),
-            "used": side_info.get("used", used)
+            "coords":    b64(side_info["coords"]),
+            "pred_vals": b64(side_info["pred_vals"]),
+            "used":      side_info.get("used", used),
         },
         "used_bits": used,
         "cover_shape": list(cover.shape),
@@ -91,12 +92,13 @@ def cmd_extract(args):
     with open(args.meta, "r") as f:
         meta = json.load(f)
 
-    # Updated: load coords + used
+    # Load coords + pred_vals + used
     side_info = {
         "H": meta["side_info"]["H"],
         "W": meta["side_info"]["W"],
-        "coords": ub64(meta["side_info"]["coords"]),
-        "used": meta["side_info"].get("used", meta["used_bits"])
+        "coords":    ub64(meta["side_info"]["coords"]),
+        "pred_vals": ub64(meta["side_info"]["pred_vals"]),
+        "used":      meta["side_info"].get("used", meta["used_bits"]),
     }
     used = meta["used_bits"]
 
@@ -163,4 +165,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
