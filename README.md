@@ -7,36 +7,35 @@
 
 > **Author:** Saransh (SKP)  
 > **Project Type:** Research / Cryptographic Image Security  
-> **Status:** ✅ Verified — BER = 0.0  |  PSNR ≈ 50 dB  |  Perfect SHA-256 Reversibility  
+> **Status:** ✅ Verified — **BER = 0.0**  |  **PSNR ≈ 50 dB**  |  **Perfect SHA-256 Reversibility**
 
 ---
 
 ## 🧩 Abstract
 
-This project presents a **Robust Reversible Watermarking (RRW)** scheme combined with **AES-GCM encryption** and **Secure Multi-Party (SMC) lightweight cryptography**.  
-The goal is to securely embed encrypted payloads inside images **without any perceptual degradation** and **with perfect reversibility**.
+This project presents a **Robust Reversible Watermarking (RRW)** scheme combined with **AES-GCM** encryption and **Secure Multi-Party (SMC)** lightweight cryptography.  
+Goal: securely embed encrypted payloads inside images **without perceptual degradation** and with **bit-exact reversibility**.
 
-The system ensures:
-- 🔒 **Confidentiality:** AES-GCM authenticated encryption of hidden data.  
-- ⚙️ **Reversibility:** Exact recovery of the original cover image (BER = 0).  
-- 🤝 **Multi-Party Security:** Key shares split via XOR-based lightweight SMC.  
-- 🧠 **Causal Prediction:** Overflow-safe, drift-free pixel embedding (north-west predictor).  
-- 📊 **Integrity Validation:** SHA-256 verification of recovered cover.
+**Highlights**
+- 🔒 **Confidentiality:** AES-GCM authenticated encryption.
+- ♻️ **Reversibility:** Exact cover recovery (BER = 0).
+- 🤝 **Multi-Party:** XOR key split/merge (SMC).
+- 🧠 **Causal RRW:** Overflow-safe, drift-free embedding (causal predictor).
+- 🧾 **Integrity:** SHA-256 verification of recovered cover.
 
 ---
 
 ## 🧱 System Architecture
 
-[Plaintext] ──► AES-GCM Encryption ──► Ciphertext Bits ──► RRW Embedding ──► [Watermarked Image]
-│
-▼
-SMC Key Split (Multi-Party XOR)
-│
-▼
-[Watermarked Image] ──► RRW Extraction ──► Ciphertext ──► AES-GCM Decryption ──► [Recovered Plaintext]
-▲
-│
-SHA-256 & PSNR Verification
+[Plaintext] → AES-GCM → [Ciphertext bits]
+↓
+SMC split
+↓
+[RRW Embedding] → [Watermarked Image]
+↓
+[RRW Extraction] → [Ciphertext] → AES-GCM → [Recovered Plaintext]
+↑
+SHA-256 / PSNR checks
 
 
 ---
@@ -44,65 +43,67 @@ SHA-256 & PSNR Verification
 ## ⚙️ Features
 
 | Module | Functionality |
-|---------|----------------|
-| **`crypto.py`** | AES-GCM encryption/decryption with Scrypt key derivation |
-| **`smc.py`** | XOR-based Secure Multi-Party key split & combine |
-| **`watermark_rrw.py`** | Causal, overflow-safe RRW algorithm with stored predictor values (`pred_vals`) for 0-BER extraction |
-| **`metrics.py`** | PSNR, BER, and SSIM utilities |
-| **`main.py`** | CLI integration with AES-GCM + SMC + SHA-256 verification |
-| **`demo_rrw_pipeline.py`** | Stand-alone demo pipeline for quick testing |
+|---|---|
+| `crypto.py` | AES-GCM (PyCryptodome) + Scrypt key derivation |
+| `smc.py` | XOR-based key split / combine (SMC) |
+| `watermark_rrw.py` | Causal, overflow-safe RRW with stored predictor context (0-BER extraction) |
+| `metrics.py` | PSNR / BER / SSIM utilities |
+| `main.py` | CLI (AES-GCM + SMC + SHA-256 verification) |
+| `demo_rrw_pipeline.py` | Minimal end-to-end demo runner |
 
 ---
 
 ## 🧪 Verification Results
 
 | Metric | Result | Meaning |
-|--------|---------|---------|
-| **Recovered Plaintext** | ✅ *Secure reversible watermarking + AES-GCM + SMC test successful ✅* | End-to-end correctness |
-| **PSNR (dB)** | ≈ 50 dB | Imperceptible watermark |
-| **BER** | 0.000000 | Perfect bit recovery |
-| **SHA-256 (Cover)** | Match | Byte-exact reversibility |
+|---|---|---|
+| Recovered Plaintext | ✅ *Secure reversible watermarking + AES-GCM + SMC test successful ✅* | End-to-end correctness |
+| PSNR (dB) | ≈ 50 dB | Imperceptible watermark |
+| BER | **0.000000** | Perfect bit recovery |
+| SHA-256 (Cover) | Match | Byte-exact reversibility |
 
 ---
 
 ## 🧰 Installation
 
 ```bash
-# Clone repo
+# Clone
 git clone https://github.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography.git
 cd Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography
 
-# Create virtual environment (Windows)
-python -m venv .venv & .\.venv\Scripts\activate
-# (macOS/Linux: python -m venv .venv && source .venv/bin/activate)
+# Create venv
+python -m venv .venv
+# Windows
+.\.venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 
-# Install dependencies
+# Install deps
 pip install -U numpy pillow pycryptodome opencv-python opencv-contrib-python
 
 🚀 Usage
 
-Quick Test (Demo Mode) — auto-generates a gradient image:
+Quick Demo (auto-generates a gradient cover)
 
 python demo_rrw_pipeline.py ^
   --cover data/cover.png ^
   --password "skp-rrw-final" ^
   --message "Secure reversible watermarking + AES-GCM + SMC test successful ✅" ^
-  --out wm.png ^
+  --out watermarked.png ^
   --recover recovered.png
 
-Full CLI (With SMC + Hash Verification)
+Full CLI (SMC + SHA-256 verification)
 
 # Embed
 python main.py embed ^
   --cover data/cover.png ^
   --password "skp-rrw-final" ^
   --message "Top secret" ^
-  --out wm.png
+  --out watermarked.png
 
 # Extract
 python main.py extract ^
-  --marked wm.png ^
-  --meta wm.png.meta.json ^
+  --marked watermarked.png ^
+  --meta watermarked.png.meta.json ^
   --password "skp-rrw-final" ^
   --recover recovered.png
 
@@ -122,38 +123,30 @@ Robust-Reversible-Watermarking/
 ├── metrics.py
 ├── demo_rrw_pipeline.py
 ├── main.py
-└── legacy_AES_LSB_version.py
+├── legacy_AES_LSB_version.py
+└── examples/
+    ├── watermarked.png
+    └── recovered.png
 
-## 📊 Example Output Images
-<div align="center">
-  <img src="examples/watermarked.png" width="45%" />
-  <img src="examples/recovered.png" width="45%" />
-  <p><em>Figure: Watermarked vs Recovered image — perfect reversibility (BER = 0)</em></p>
-</div>
+📊 Example Output Images
+Watermarked	Recovered (Bit-Exact)
+
+	<p align="center"><em>Figure: Watermarked vs. Recovered image. Reversibility is perfect (BER = 0).</em></p>
 
 📈 Research Significance
 
-This project demonstrates:
+Reversible watermarking with zero information loss
 
-    A reversible watermarking method with zero information loss.
+Authenticated encryption + lightweight multi-party sharing
 
-    Integration of authenticated encryption and lightweight multi-party sharing.
+Strong cryptographic rigor with image-domain reversibility
 
-    Strong cryptographic rigor combined with image-domain reversibility.
-
-    Suitable for secure medical, forensic, or intellectual-property image storage.
-
+Applicable to medical, forensics, and IP-sensitive archives
 
 📜 License
 
-This project is released under the MIT License — you are free to use, modify, and distribute with attribution.
+Released under MIT License — free to use, modify, and distribute with attribution.
 
 ✨ Citation
 
-If you use or reference this work in academic research, please cite:
-
 Saransh Pandey, “Robust Reversible Watermarking in Encrypted Images with Secure Multi-Party Lightweight Cryptography”, 2025.
-
-🚀 Final Status:
-✅ BER = 0.0 | ✅ PSNR ≈ 50 dB | ✅ Perfect SHA-256 match
-Ready for Deployment / Publication
