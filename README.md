@@ -123,13 +123,12 @@ Robust-Reversible-Watermarking/
 ├── metrics.py             # PSNR / BER / SSIM
 ├── demo_rrw_pipeline.py   # Minimal runnable demo
 ├── main.py                # CLI wrapper + SHA-256 verification
-└── legacy_AES_LSB_version.py (archived for reference)
+└── legacy_AES_LSB_version.py # (archived for reference)
 
 ## 📊 Example Output Images
-
 <p align="center">
   <img src="examples/watermarked.png" alt="Watermarked Image" width="45%"/>
-  <img src="examples/recovered.png" alt="Recovered Image" width="45%"/>
+  <img src="examples/recovered.png"  alt="Recovered Image"  width="45%"/>
 </p>
 
 <p align="center">
