@@ -130,35 +130,40 @@ Robust-Reversible-Watermarking/
 
 ## 📊 Example Output Images
 
-| Watermarked Image | Recovered Image |
-|---|---|
-| ![Watermarked](https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/watermarked.png) | ![Recovered](https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/recovered.png) |
-
-**Direct raw links (for download / copy):**
-
-Watermarked: https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/watermarked.png
-
-Recovered : https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/recovered.png
-
 <p align="center">
-  <em>Figure: Watermarked vs Recovered (BER = 0, bit-exact reversibility).</em>
+  <img src="https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/watermarked.png" width="45%" alt="Watermarked Image"/>
+  <img src="https://raw.githubusercontent.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography/main/examples/recovered.png" width="45%" alt="Recovered Image"/>
 </p>
 
+<p align="center">
+  <em>Figure: Comparison between Watermarked and Recovered images showing perfect reversibility (BER = 0)</em>
+</p>
 
 📈 Research Significance
 
-Reversible watermarking with zero information loss
+This project demonstrates:
 
-Authenticated encryption + lightweight multi-party sharing
+A reversible watermarking method with zero information loss
 
-Strong cryptographic rigor with image-domain reversibility
+Integration of authenticated encryption and lightweight multi-party sharing
 
-Applicable to medical, forensics, and IP-sensitive archives
+Strong cryptographic rigor combined with image-domain reversibility
+
+Suitable for medical, forensic, and IP-secure image storage
 
 📜 License
 
-Released under MIT License — free to use, modify, and distribute with attribution.
+Released under the MIT License — free to use, modify, and distribute with attribution.
 
 ✨ Citation
 
+If you use or reference this work in academic research, please cite:
+
 Saransh Pandey, “Robust Reversible Watermarking in Encrypted Images with Secure Multi-Party Lightweight Cryptography”, 2025.
+
+✅ Final Verification
+
+BER: 0.000000
+PSNR: ≈ 50 dB
+SHA-256: Perfect Match
+Status: Ready for Publication 🚀
