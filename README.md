@@ -122,20 +122,21 @@ PSNR(marked, recovered-cover): 50.1 dB
 BER: 0.0
 ✅ Perfect reversibility verified (bit-exact match)
 
-📦 File Structure
+📦 **File Structure**
 
 Robust-Reversible-Watermarking/
 │
-├── crypto.py
-├── smc.py
-├── watermark_rrw.py
-├── metrics.py
-├── demo_rrw_pipeline.py
-├── main.py
-├── legacy_AES_LSB_version.py
+├── crypto.py # AES-GCM + key derivation
+├── smc.py # Secure Multi-Party XOR split/merge
+├── watermark_rrw.py # Causal RRW core (pred_vals embedded)
+├── metrics.py # PSNR / BER / SSIM metrics
+├── demo_rrw_pipeline.py # Minimal runnable demo
+├── main.py # CLI wrapper + SHA-256 verification
+├── legacy_AES_LSB_version.py # Archived reference version
+│
 └── examples/
-     ├── watermarked.png
-     └── recovered.png
+├── watermarked.png # Embedded watermark output
+└── recovered.png # Perfectly recovered original cover
 
 ## 📊 Example Output Images
 
