@@ -1,10 +1,5 @@
 # 🧠 Robust Reversible Watermarking in Encrypted Images with Secure Multi-Party Lightweight Cryptography
 
-## Quick visual check
-![Watermarked](examples/watermarked.png)
-![Recovered](examples/recovered.png)
-
-
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)]()
 [![AES-GCM](https://img.shields.io/badge/Crypto-AES--GCM-green.svg)]()
 [![RRW](https://img.shields.io/badge/Algorithm-Reversible%20Watermarking-orange.svg)]()
@@ -129,10 +124,16 @@ Robust-Reversible-Watermarking/
 ├── main.py
 └── legacy_AES_LSB_version.py
 
-📊 Example Output Images
-| Watermarked | Recovered |
-|---|---|
-| ![](examples/watermarked.png) | ![](examples/recovered.png) |
+## 📊 Example Output Images
+
+| Watermarked Image | Recovered Image |
+|--------------------|----------------|
+| ![Watermarked](examples/watermarked.png) | ![Recovered](examples/recovered.png) |
+
+<p align="center">
+  <em>Figure: Comparison between Watermarked and Recovered images showing perfect reversibility (BER = 0)</em>
+</p>
+
 
 
 
