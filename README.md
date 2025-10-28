@@ -85,42 +85,35 @@ source .venv/bin/activate
 # Install dependencies
 pip install -U numpy pillow pycryptodome opencv-python opencv-contrib-python
 
-🚀 Usage
-🔹 Quick Test (Demo Mode)
+## ⚙️ Usage Summary
 
-Auto-generates a gradient image and runs full pipeline:
+| Mode | Command | Description |
+|------|---------|-------------|
+| **Quick Test (Demo Mode)** | `python demo_rrw_pipeline.py --cover data/cover.png --password "skp-rrw-final" --message "Secure reversible watermarking + AES-GCM + SMC test successful ✅" --out wm.png --recover recovered.png` | **Auto-generates a gradient image and runs the full pipeline** (AES-GCM encrypt → RRW embed → extract → decrypt) to produce `wm.png` and `recovered.png`. |
+| **Full CLI Mode** | `python main.py embed --cover data/cover.png --password "skp-rrw-final" --message "Top secret" --out wm.png` | Embeds encrypted payload and writes **`wm.png`** plus **`wm.png.meta.json`**. |
+| **Extraction Mode** | `python main.py extract --marked wm.png --meta wm.png.meta.json --password "skp-rrw-final" --recover recovered.png` | Extracts bits, decrypts plaintext, restores **`recovered.png`**, and verifies SHA-256. |
 
-python demo_rrw_pipeline.py ^
-  --cover data/cover.png ^
-  --password "skp-rrw-final" ^
-  --message "Secure reversible watermarking + AES-GCM + SMC test successful ✅" ^
-  --out watermarked.png ^
-  --recover recovered.png
+---
 
-🔹 Full CLI (With SMC + Hash Verification)
+## 💾 Embed & Extraction Process
 
-Embed
+| Step | File Input | File Output | Description |
+|------|------------|-------------|-------------|
+| 1️⃣ **Embed Phase** | `cover.png` + plaintext + password | `watermarked.png`, `watermarked.png.meta.json` | AES-GCM encrypts plaintext; RRW embeds ciphertext bits; metadata saved for extraction. |
+| 2️⃣ **Extract Phase** | `watermarked.png`, `watermarked.png.meta.json`, password | `recovered.png` + plaintext | RRW bit-exact extraction → AES-GCM decrypt → SHA-256 cover verification. |
 
-python main.py embed ^
-  --cover data/cover.png ^
-  --password "skp-rrw-final" ^
-  --message "Top secret" ^
-  --out watermarked.png
+---
 
-Extract
+## ✅ Expected Output
 
-python main.py extract ^
-  --marked watermarked.png ^
-  --meta watermarked.png.meta.json ^
-  --password "skp-rrw-final" ^
-  --recover recovered.png
+| Metric | Result | Description |
+|--------|--------|-------------|
+| **Recovered Plaintext** | `Secure reversible watermarking + AES-GCM + SMC test successful ✅` | Confirms end-to-end correctness. |
+| **PSNR (dB)** | `≈ 50.1 dB` | Watermark is visually imperceptible. |
+| **BER** | `0.0` | Perfect bit recovery. |
+| **SHA-256 Match** | ✅ | Recovered cover is bit-exact to original. |
+| **Final Status** | 🧠 *Project Verified* | BER = 0.0 • PSNR ≈ 50 dB • SHA-256 = Match. |
 
-✅ Expected Output
-
-Recovered Plaintext: Secure reversible watermarking + AES-GCM + SMC test successful ✅
-PSNR(marked, recovered-cover): 50.1 dB
-BER: 0.0
-✅ Perfect reversibility verified (bit-exact match)
 
 ## 📦 File Structure
 
