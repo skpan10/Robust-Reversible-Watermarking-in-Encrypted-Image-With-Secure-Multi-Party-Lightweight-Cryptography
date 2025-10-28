@@ -69,69 +69,63 @@ SHA-256 & PSNR Verification
 
 ```bash
 # Clone repo
-git clone https://github.com/yourusername/Robust-Reversible-Watermarking.git
-cd Robust-Reversible-Watermarking
+git clone https://github.com/skpan10/Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography.git
+cd Robust-Reversible-Watermarking-in-Encrypted-Image-With-Secure-Multi-Party-Lightweight-Cryptography
 
-# Create virtual environment
-python -m venv .venv && source .venv/bin/activate   # (use .venv\Scripts\activate on Windows)
+# Create virtual environment (Windows)
+python -m venv .venv & .\.venv\Scripts\activate
+# (macOS/Linux: python -m venv .venv && source .venv/bin/activate)
 
 # Install dependencies
 pip install -U numpy pillow pycryptodome opencv-python opencv-contrib-python
 
 🚀 Usage
-🔹 Quick Test (Demo Mode)
 
-Run the self-contained pipeline (auto-generates a gradient image):
+Quick Test (Demo Mode) — auto-generates a gradient image:
 
-python demo_rrw_pipeline.py \
-  --cover data/cover.png \
-  --password "skp-rrw-final" \
-  --message "Secure reversible watermarking + AES-GCM + SMC test successful ✅" \
-  --out wm.png \
+python demo_rrw_pipeline.py ^
+  --cover data/cover.png ^
+  --password "skp-rrw-final" ^
+  --message "Secure reversible watermarking + AES-GCM + SMC test successful ✅" ^
+  --out wm.png ^
   --recover recovered.png
 
-🔹 Full CLI (With SMC + Hash Verification)
+Full CLI (With SMC + Hash Verification)
 
 # Embed
-python main.py embed \
-  --cover data/cover.png \
-  --password "skp-rrw-final" \
-  --message "Top secret" \
+python main.py embed ^
+  --cover data/cover.png ^
+  --password "skp-rrw-final" ^
+  --message "Top secret" ^
   --out wm.png
 
 # Extract
-python main.py extract \
-  --marked wm.png \
-  --meta wm.png.meta.json \
-  --password "skp-rrw-final" \
+python main.py extract ^
+  --marked wm.png ^
+  --meta wm.png.meta.json ^
+  --password "skp-rrw-final" ^
   --recover recovered.png
 
-✅ Expected Output
+Expected Output
 
 Recovered Plaintext: Secure reversible watermarking + AES-GCM + SMC test successful ✅
-PSNR(marked, recovered-cover): 50.1 dB
+PSNR(marked, recovered-cover): ~50 dB
 BER: 0.0
 ✅ Perfect reversibility verified (bit-exact match)
 
 📦 File Structure
 
 Robust-Reversible-Watermarking/
-│
-├── crypto.py              # AES-GCM + key derivation
-├── smc.py                 # Secure Multi-Party XOR split/merge
-├── watermark_rrw.py       # Causal RRW core (pred_vals embedded)
-├── metrics.py             # PSNR / BER / SSIM
-├── demo_rrw_pipeline.py   # Minimal runnable demo
-├── main.py                # CLI wrapper + SHA-256 verification
-└── legacy_AES_LSB_version.py # (archived for reference)
+├── crypto.py
+├── smc.py
+├── watermark_rrw.py
+├── metrics.py
+├── demo_rrw_pipeline.py
+├── main.py
+└── legacy_AES_LSB_version.py
 
-## 📊 Example Output Images
-
-| Watermarked | Recovered |
-|---|---|
-| ![Watermarked](examples/watermarked.png) | ![Recovered](examples/recovered.png) |
-
-
+📊 Example Output Images
+<p align="center"> <img src="examples/watermarked.png" alt="Watermarked Image" width="45%"/> <img src="examples/recovered.png" alt="Recovered Image" width="45%"/> </p> <p align="center"> <em>Figure: Comparison between Watermarked and Recovered images showing perfect reversibility (BER = 0)</em> </p> ```
 
 📈 Research Significance
 
